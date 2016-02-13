@@ -1,7 +1,10 @@
 {
   "name": "clovers/framework",
   "description": "The Clover Framework.",
-  "keywords": ["framework", "clover"],
+  "keywords": [
+    "framework",
+    "clover"
+  ],
   "license": "MIT",
   "require": {
     "php": ">=5.5.9",
@@ -11,5 +14,6 @@
   "autoload": {
     "psr-4": {
       "Illuminate\\": "src/Illuminate/"
-    }
-  }
+    },
+  },
+}
