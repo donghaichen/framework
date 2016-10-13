@@ -4,15 +4,7 @@ namespace Illuminate\Clover;
 
 /**
  * Paginator.php
- *
- * (c) 2014 overtrue <chendonghai888@gmail.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- *
  * @author overtrue <chendonghai888@gmail.com>
- * @github https://github.com/overtrue
- * @url    http://overtrue.me
  * @date   2014-10-23T20:05:33
  */
 
