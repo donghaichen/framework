@@ -14,6 +14,7 @@ class Config
 {
     // 配置文件路径
     private static $config_path = '';
+    private static $config = '';
 
 
     /**
@@ -44,6 +45,10 @@ class Config
             if(strpos($type, '.')){
                 $type = explode('.', $type);
                 $file = $config_path . $type[0] . '.php';
+                if(!array_key_exists($type[1], self::load($file)))
+                {
+                    throw new Exception('This configuration [' . self::$config . '] is not supported!');
+                }
                 $data = self::load($file)[$type[1]];
             }else{
                 $file = $config_path . $file . '.php';
@@ -63,7 +68,7 @@ class Config
     {
         if(!file_exists($file))
         {
-            throw new Exception("This configuration is not supported!");
+            throw new Exception('This configuration [' . self::$config . '] is not supported!');
         }
         return [
             include $file
@@ -77,6 +82,7 @@ class Config
      */
     public static function get($name = null)
     {
+        self::$config = $name;
         return self::parse($name);
     }
 }
