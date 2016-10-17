@@ -1,191 +1,82 @@
 <?php
 
 namespace Illuminate\Clover;
-
-use ArrayAccess;
-
+use Exception;
 /**
  * Config.php
  *
  * @author Donghaichen <chendonghai888@gmail.com>
  * @date   [2016-01-27 15:55]
+ * @todo 多级配置　不知道业务是否需要大量的三级类配置，所以暂时支持二级配置
  */
 
-/**
- *  配置文件服务
- *  根据不同的运行环境确定不同的配置项
- */
-class Config implements ArrayAccess
+class Config
 {
+    // 配置文件路径
+    private static $config_path = '';
+
 
     /**
-     * 配置文件路径
-     *
-     * @var string
-     */
-    protected $path;
-
-    /**
-     * 运行环境名称
-     *
-     * @var array
-     */
-    protected $env = '';
-
-    /**
-     * 临时设置
-     *
-     * @var array
-     */
-    protected $tempConfig = [];
-
-    /**
-     * 初始化配置
-     *
-     * @param string $path 配置文件路径
-     * @param string $env  运行环境名称
-     *
-     */
-    public function __construct($path, $env)
-    {
-        $this->path = $path;
-        if (is_dir($path . '/' . $env)) {
-            $this->env = $env;
-        }
-    }
-
-    /**
-     * 创建配置实例
-     *
-     * @param string $path 配置文件路径
-     * @param string $env  运行环境名称
-     *
-     * @return Config
-     */
-    public static function make($path, $env)
-    {
-        return new static($path, $env);
-    }
-
-    /**
-     * 读取配置
-     *
-     * @return array 配置文件信息
-     */
-    public function get($key, $default = null)
-    {
-        if (isset($this->tempConfig[$key])) {
-            return $this->tempConfig[$key];
-        }
-
-        list($namespace, $group, $item) = $this->_parseKey($key);
-
-        $baseConfigFile = $this->path . '/' . $namespace . '.php';
-        $envConfigFile  = $this->path . '/' . $this->env. '/' . $namespace . '.php';
-
-        if (!file_exists($baseConfigFile)) {
-            return $default;
-        }
-
-        $config = $this->load($baseConfigFile);
-
-        if (empty($config)) {
-            return $default;
-        }
-
-        $envConfig = $this->load($envConfigFile);
-
-        if ($envConfig) {
-            $config = array_merge($config, $envConfig);
-        }
-
-        $configArray = [$namespace => $config];
-
-        $res = array_get($configArray, $key);
-
-        return is_null($res) ? $default : $res;
-    }
-
-    /**
-     * 检测是否有配置
-     *
-     * @param string $key 配置名
-     *
-     * @return boolean
-     */
-    public function has($key)
-    {
-        return null !== $this->get($key);
-    }
-
-    /**
-     * 修改配置
-     *
-     * @param string $key   名称
-     * @param mixed  $value 值
-     */
-    public function set($key, $value)
-    {
-        $this->tempConfig[$key] = $value;
-    }
-
-    /**
-     * 读取配置文件
-     *
-     * @param string $path 文件路径
-     *
+     * 解析配置文件或内容
      * @return array
      */
-    protected function load($path)
+    public static function parse($file)
     {
-        if (!stream_resolve_include_path($path)) {
-            return false;
+        $config_path = self::$config_path == '' ? APP_PATH . '/config/' : self::$config_path;
+        if($file == null){
+            $file = scandir($config_path);
+            foreach ($file as $k => $v)
+            {
+                unset($file[0], $file[1]);
+                if($v == 'routes.php' )
+                {
+                    unset($file[$k]);
+                }
+            }
+            foreach ($file as $k => $v)
+            {
+                $name = str_replace('.php', '', $v);
+                $file = $config_path . $v;
+                $data[$name] = include $file;
+            }
+        }else{
+            $type = $file;
+            if(strpos($type, '.')){
+                $type = explode('.', $type);
+                $file = $config_path . $type[0] . '.php';
+                $data = self::load($file)[$type[1]];
+            }else{
+                $file = $config_path . $file . '.php';
+                $data = self::load($file);
+            }
+
         }
-
-        $config = include $path;
-
-        if (!is_array($config)) {
-            return false;
-        }
-
-        return $config;
+        return $data;
     }
 
     /**
-     * 解析配置key
-     *
-     * @param string $key
-     *
+     * 加载配置文件（PHP格式）
+     * @param string    $file 配置文件名
      * @return array
      */
-    protected function _parseKey($key)
+    public static function load($file)
     {
-        $arr = explode('.', $key);
-
+        if(!file_exists($file))
+        {
+            throw new Exception("This configuration is not supported!");
+        }
         return [
-            $arr[0],
-            !isset($arr[0]) ? $arr[1] : '',
-            !isset($arr[0]) ? $arr[2] : '',
-        ];
+            include $file
+        ][0];
     }
 
-    public function offsetGet($key)
+    /**
+     * 获取配置参数 为空则获取所有配置
+     * @param string $name 配置参数名
+     * @return mixed
+     */
+    public static function get($name = null)
     {
-        return $this->get($key);
-    }
-
-    public function offsetSet($key, $value)
-    {
-        return $this->set($key, $value);
-    }
-
-    public function offsetExists($key)
-    {
-        return $this->has($key);
-    }
-
-    public function offsetUnset($key)
-    {
-        return $this->set($key, null);
+        return self::parse($name);
     }
 }
