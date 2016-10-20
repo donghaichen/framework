@@ -5,14 +5,14 @@ namespace Illuminate\Clover;
 /**
  * Paginator.php
  *
- * (c) 2014 overtrue <chendonghai888@gmail.com>
+ * (c) 2014 donghaichen <chendonghai888@gmail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  *
- * @author overtrue <chendonghai888@gmail.com>
- * @github https://github.com/overtrue
- * @url    http://overtrue.me
+ * @author donghaichen <chendonghai888@gmail.com>
+ * @github https://github.com/donghaichen
+ * @url    http://donghaichen.me
  * @date   2014-10-23T20:05:33
  */
 
@@ -39,7 +39,7 @@ class Paginator implements
     /**
      * Constructor
      *
-     * @param \Slim\Http\Request $request
+     * @param \Clovers\Http\Request $request
      * @param string             $pager
      */
     public function __construct($pager = 'page')
